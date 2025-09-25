@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 
 class PostBase(BaseModel):
     title: str
@@ -43,4 +43,31 @@ class Vote(BaseModel):
     post_id: int
     dir: int  # 1 for upvote, 0 for remove vote
 
-        
+class UserResponse(BaseModel):
+     id: int
+     username: str
+     email: EmailStr
+     posts_count: int
+     comments_count: int
+     votes_count: int
+
+     class Config:
+        orm_mode = True       
+
+class UserCreate(BaseModel):
+    username:str
+    email:EmailStr
+    password:str
+
+class UserCreateOut(BaseModel):
+    id:int
+    username:str
+    email:EmailStr
+    created_at:datetime
+
+    class Config:
+        orm_mode = True
+
+class UserLogin(BaseModel):
+    email:EmailStr
+    password:str

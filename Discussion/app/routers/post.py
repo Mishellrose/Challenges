@@ -35,7 +35,7 @@ def get_user_posts(user_id:int,db:Session=Depends(get_db)):
     return posts
 
 @router.put("/{id}",response_model=schemas.PostResponse)
-def update_post(id:int,updated_post:schemas.UpdatePost,db:Session=Depends(get_db),current_user:int=Depends(ouath2.get_current_user)):
+def update_post(id:int,updated_post:schemas.UpdatePost,db:Session=Depends(get_db),current_user:int=Depends(oauth2.get_current_user)):
     post_query = db.query(models.Post).filter(models.Post.id==id)
     post = post_query.first()
     if post==None:
