@@ -11,7 +11,7 @@ router=APIRouter(
 
 @router.post("/{post_id}",status_code=status.HTTP_201_CREATED,response_model=schemas.CommentResponse)
 def create_comment(post_id:int,comment:schemas.CommentCreate,db:Session=Depends(get_db),current_user:int=Depends(oauth2.get_current_user)):
-    new_comment=models.Comment(owner_id=current_user.id,**comment.dict())
+    new_comment=models.Comment(post_id=post_id,owner_id=current_user.id,**comment.dict())
     db.add(new_comment)
     db.commit()
     db.refresh(new_comment)

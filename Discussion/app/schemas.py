@@ -52,7 +52,7 @@ class UserResponse(BaseModel):
      votes_count: int
 
      class Config:
-        orm_mode = True       
+        from_attributes = True
 
 class UserCreate(BaseModel):
     username:str
@@ -66,8 +66,16 @@ class UserCreateOut(BaseModel):
     created_at:datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserLogin(BaseModel):
     email:EmailStr
     password:str
+
+class PostCreate(PostBase):
+    title: str
+    content: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
