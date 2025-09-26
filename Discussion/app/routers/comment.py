@@ -9,15 +9,17 @@ router=APIRouter(
 )
 
 
-@router.post("/{post_id}",status_code=status.HTTP_201_CREATED,response_model=schemas.CommentResponse)
-def create_comment(post_id:int,comment:schemas.CommentCreate,db:Session=Depends(get_db),current_user:int=Depends(oauth2.get_current_user)):
-    new_comment=models.Comment(post_id=post_id,owner_id=current_user.id,**comment.dict())
+# @router.post("/{post_id}",status_code=status.HTTP_201_CREATED,response_model=schemas.CommentOut)
+# def create_comment(post_id:int,comment:schemas.Comment,db:Session=Depends(get_db),current_user:int=Depends(oauth2.get_current_user)):
+@router.post("/{post_id}",status_code=status.HTTP_201_CREATED,response_model=schemas.CommentOut)
+def create_comment(post_id:int,comment:schemas.Comment,db:Session=Depends(get_db),current_user:int=Depends(oauth2.get_current_user)):
+    new_comment=models.Comment(**comment.dict(),postc_id=post_id,userc_id=current_user.id)
     db.add(new_comment)
     db.commit()
     db.refresh(new_comment)
     return new_comment
 
-@router.get("/{post_id}",response_model=List[schemas.CommentResponse])
+@router.get("/{post_id}",response_model=List[schemas.CommentGet])
 def get_post_comments(post_id:int,db:Session=Depends(get_db)):
-    comments = db.query(models.Comment).filter(models.Comment.post_id==post_id).all()
+    comments = db.query(models.Comment).filter(models.Comment.postc_id==post_id).all()
     return comments

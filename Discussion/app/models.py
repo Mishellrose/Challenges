@@ -1,14 +1,15 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import TIMESTAMP, Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from .database import Base
+from sqlalchemy.sql.expression import text
 
 class Post(Base):
     __tablename__ = 'posts'
     id = Column(Integer, primary_key=True,nullable=False)
-    title = Column(String(255), nullable=False)
+    title = Column(String, nullable=False)
     content = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(TIMESTAMP(timezone=True),nullable=False, default=text('now()'))
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),nullable=False)
     owner=relationship("User")  
 
@@ -22,10 +23,10 @@ class User(Base):
 
 class Comment(Base):
     __tablename__ = 'comments'
-    id = Column(Integer, primary_key=True,nullable=False)
+    id = Column(Integer, primary_key=True,index=True)
     content = Column(String, nullable=False)
-    post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"),primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),primary_key=True)
+    postc_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"),nullable=False)
+    userc_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),nullable=False)
     owner=relationship("User")
     owner_post=relationship("Post")
 
@@ -38,7 +39,7 @@ class Vote(Base):
 class Admin(Base):
     __tablename__='admins'
     id = Column(Integer, primary_key=True,nullable=False)
-    username = Column(String(50), unique=True, nullable=False)
     email = Column(String(100), unique=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    password = Column(String, nullable=False)
+    
 

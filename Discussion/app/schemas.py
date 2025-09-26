@@ -1,81 +1,90 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from typing import List
+from typing import List,Optional
+from pydantic.types import conint
 
-class PostBase(BaseModel):
-    title: str
-    content: str
-    # tags later
+class User(BaseModel):
+    username:str
+    email:EmailStr
 
-class PostResponse(PostBase):
-    id: int
-    created_at: datetime
-    owner_id: int
-    # tags later
+class UserCreate(User):
+    password: str
+
+class UserOut(User):
+    id:int
+    created_at:datetime
+    class config:
+        from_attributes:True
+
+class Post(BaseModel):
+    title:str
+    content:str
+
+    
+class PostCreateOut(Post): 
+    id:int
+    owner_id:int
+    created_at:datetime
+    class config:
+        from_attributes:True
+
 
 class AllPostsOut(BaseModel):
-    posts: List[PostResponse]
-    owner: dict
-    votes: int
-
-
-class UpdatePost(BaseModel):
+    id: int
     title: str
     content: str
-    # tags later
-
-class CommentResponse(BaseModel):
-    id: int
-    content: str
-    post_id: int
     owner_id: int
     created_at: datetime
-
-class CommentCreate(BaseModel):
-    content: str
-
-class CreateCommentOut(BaseModel):
-    id: int
-    content: str
-    owner: dict
-
-class Vote(BaseModel):
-    post_id: int
-    dir: int  # 1 for upvote, 0 for remove vote
-
-class UserResponse(BaseModel):
-     id: int
-     username: str
-     email: EmailStr
-     posts_count: int
-     comments_count: int
-     votes_count: int
-
-     class Config:
-        from_attributes = True
-
-class UserCreate(BaseModel):
-    username:str
-    email:EmailStr
-    password:str
-
-class UserCreateOut(BaseModel):
-    id:int
-    username:str
-    email:EmailStr
-    created_at:datetime
+    votes: int
+    owner: UserOut
 
     class Config:
-        from_attributes = True
+        orm_mode = True 
+    
+    
 
-class UserLogin(BaseModel):
+class UpdateOut(Post):
+    id:int
+    owner_id:int
+    created_at:datetime
+    class config:
+        from_attributes=True
+
+class Vote(BaseModel):
+    post_id:int
+    dir: conint(le=1)
+
+class Comment(BaseModel):
+    content:str
+
+class CommentOut(Comment):
+    id:int
+    owner_post:PostCreateOut
+    owner:User
+    class Config:
+        from_attributes=True
+
+class CommentGet(BaseModel):
+    id:int
+    content:str
+    owner:UserOut
+    class Config:
+        orm_mode=True
+        
+class AdminLogin(BaseModel):
     email:EmailStr
     password:str
-
-class PostCreate(PostBase):
-    title: str
-    content: str
+    
+class AdminOut(User):
+    id:int
+    posts_count:int     
+    comments_count:int  
+    votes_count:int
 
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class TokenData(BaseModel):
+    id: Optional[int]=None
+

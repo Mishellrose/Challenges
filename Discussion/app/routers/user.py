@@ -2,21 +2,24 @@ from fastapi import APIRouter, status, HTTPException, Depends
 from sqlalchemy.orm import Session
 
 
-from app import models, schemas
+from app import models, schemas, utils
 from app.database import get_db
 
 router = APIRouter(
     prefix="/users", tags=["User"])
 
-@router.post("/",status_code=status.HTTP_201_CREATED, response_model=schemas.UserCreateOut)
+@router.post("/",status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
 def create_user(user:schemas.UserCreate,db:Session=Depends(get_db)):
+    hashed_password=utils.hash(user.password)
+    user.password=hashed_password
+    
     db_user = models.User(**user.dict())
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
 
-@router.get("/{id}",response_model=schemas.UserResponse)
+@router.get("/{id}",response_model=schemas.UserOut)
 def get_user(id:int,db:Session=Depends(get_db)):
     user = db.query(models.User).filter(models.User.id==id).first()
     if not user:
