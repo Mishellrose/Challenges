@@ -13,7 +13,10 @@ class UserCreate(User):
 class UserOut(User):
     id:int
     created_at:datetime
-    class config:
+    posts_count:int
+    votes:int
+    comments_count:int
+    class Config:
         from_attributes:True
 
 class Post(BaseModel):
@@ -87,4 +90,4 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[int]=None
-
+    type:Optional[str]=None

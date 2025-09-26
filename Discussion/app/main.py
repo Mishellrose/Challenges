@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 
 from app.routers import adminlogin
-from .routers import post,user,vote,comment,admin,auth
+from .routers import post,user,vote,comment,admin,auth,adminlogin
 from app import models
 from .database import engine
 

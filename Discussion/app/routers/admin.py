@@ -1,43 +1,34 @@
 from fastapi import APIRouter,Depends,status,HTTPException
 from sqlalchemy.orm import Session
-from .. import models,schemas,oauth2
+from .. import models,schemas,oauth2,database
 from ..database import get_db
 from typing import List
 
 router=APIRouter(
     prefix="/admin",tags=["Admin"])
 
-@router.delete("/{user_id}",status_code=status.HTTP_204_NO_CONTENT)
-def admin_delete_user(user_id:int, db:Session=Depends(get_db)):
-    # user_query=db.query(models.Admin).filter(models.Admin.email==admin.email,models.Admin.password==admin.password).first()
-    # if not user_query:
-    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="invalid Credentials,Not logged in as admin")
-    
-
-    
-    user_query.delete(synchronize_session=False)
+@router.delete("/{user_id}", status_code=204)
+def delete_user(user_id: int, db: Session = Depends(database.get_db), admin=Depends(oauth2.get_current_admin)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
     db.commit()
-    return{"message":"user successfully deleted"}
+    return {"message": "User deleted successfully"}
      
     
-    
-   
 
-@router.delete("/post/{id}",status_code=status.HTTP_204_NO_CONTENT)
-def admin_delete_post(id:int,db:Session=Depends(get_db),current_user:int=Depends(oauth2.get_current_user)):
-    post_query=db.query(models.Post).filter(models.Post.id==id)
-    post=post_query.first()
-    if post==None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"post with id {id} does not exist")
-    if not current_user.is_admin:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not Authorized to perform requested action")
-    post_query.delete(synchronize_session=False)
+@router.delete("/{post_id}", status_code=204)
+def delete_post(post_id: int, db: Session = Depends(database.get_db), admin=Depends(oauth2.get_current_admin)):
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    db.delete(post)
     db.commit()
-    return{"message":"post successfully deleted"}
+    return {"message": "Post deleted successfully"}
 
-@router.get("/users",response_model=List[schemas.AdminOut])
-def get_all_users(db:Session=Depends(get_db),current_user:int=Depends(oauth2.get_current_user)):
-    if not current_user.is_admin:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Not Authorized to perform requested action")
+
+@router.get("/users/{user_id}", response_model=List[schemas.UserOut])
+def get_all_users(db: Session = Depends(database.get_db), admin=Depends(oauth2.get_current_admin)):
     users = db.query(models.User).all()
     return users
