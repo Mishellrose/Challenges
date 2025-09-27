@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from .. import models,schemas,oauth2,database
 from ..database import get_db
 from typing import List
+from sqlalchemy import func
+
 
 router=APIRouter(
     prefix="/admin",tags=["Admin"])
@@ -28,7 +30,22 @@ def delete_post(post_id: int, db: Session = Depends(database.get_db), admin=Depe
     return {"message": "Post deleted successfully"}
 
 
-@router.get("/users/{user_id}", response_model=List[schemas.UserOut])
-def get_all_users(db: Session = Depends(database.get_db), admin=Depends(oauth2.get_current_admin)):
-    users = db.query(models.User).all()
-    return users
+@router.get("/users/{user_id}", response_model=List[schemas.AllUserOut])
+def get_all_users(
+    db: Session = Depends(database.get_db),
+    admin=Depends(oauth2.get_current_admin)
+):
+    users = db.query(
+        models.User,
+        func.count(models.Post.id).label("count")
+    ).join(
+        models.Post, models.User.id == models.Post.owner_id, isouter=True
+    ).group_by(models.User.id).all()
+
+    # Convert (User, count) → {"owner": User, "count": count}
+    result = [{"owner": user, "count": count} for user, count in users]
+
+    return result
+
+    # results = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).all()
+# 

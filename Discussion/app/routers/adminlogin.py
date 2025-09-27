@@ -9,7 +9,7 @@ from app.database import get_db
 router=APIRouter(tags=["AdminLogin"])
 
 @router.post("/Adminlogin",status_code=200)
-def admin_login(creds:schemas.AdminLogin,db:Session=Depends(get_db)):
+def admin_login(creds:schemas.Admin,db:Session=Depends(get_db)):
     admin=db.query(models.Admin).filter(models.Admin.email==creds.email,models.Admin.password==creds.password).first()
     if not admin:
         raise HTTPException(status_code=403,detail="Invalid Credentials")
